@@ -60,7 +60,7 @@ public class SeleniumTest {
 		}
 
 		if (cap != null) {
-			WebDriver driver = new RemoteWebDriver(new URL("http://54.164.80.78:4444/wd/hub"), cap);
+			WebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), cap);
 			driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
 			// Launch website
