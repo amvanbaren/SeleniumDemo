@@ -3,6 +3,6 @@ package org.selenium.test;
 public class App 
 {
 	public static void main(String[] args) throws Exception {                    
-	      return;     
+	      System.out.println("Hello World!");       
 	}
 }
