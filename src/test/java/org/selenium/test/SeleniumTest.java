@@ -1,8 +1,11 @@
 package org.selenium.test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -14,16 +17,22 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Sleeper;
+import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import com.google.common.base.Function;
 
 @RunWith(Parameterized.class)
 public class SeleniumTest {
 
 	@Parameters
 	public static Collection<String> browsers(){
-		return Arrays.asList(new String[]{"firefox"});
-//		return Arrays.asList(new String[]{"firefox", "chrome", "ie"});
+		return Arrays.asList(new String[]{"ie", "firefox", "chrome"});
 	}
 	
 	@Parameter
@@ -33,37 +42,33 @@ public class SeleniumTest {
 	protected ThreadLocal<RemoteWebDriver> threadDriver = null;
 
 	@Before
-	public void setUp() throws Exception {
-		String Url = "http://www.calculator.net";
-		
+	public void setUp() throws Exception {		
 		DesiredCapabilities cap = null;
 
-		if (browser.equalsIgnoreCase("firefox")) {
-			System.out.println(" Executing on FireFox");
-
-			cap = DesiredCapabilities.firefox();
-			cap.setBrowserName("firefox");
-
-		} else if (browser.equalsIgnoreCase("chrome")) {
-			System.out.println(" Executing on CHROME");
-
-			cap = DesiredCapabilities.chrome();
-			cap.setBrowserName("chrome");
-						
-		} else if (browser.equalsIgnoreCase("ie")) {
-			System.out.println(" Executing on IE");
-
-			cap = DesiredCapabilities.chrome();
-			cap.setBrowserName("ie");
-		} else {
-			throw new IllegalArgumentException("The Browser Type is Undefined");
+		switch(browser){
+			case "firefox":
+				cap = DesiredCapabilities.firefox();
+				break;
+			case "chrome":
+				cap = DesiredCapabilities.chrome();
+				break;
+			case "ie":
+				cap = DesiredCapabilities.internetExplorer();
+				cap.setVersion("11");
+				break;
+			default:
+				throw new IllegalArgumentException("The Browser Type is Undefined");
 		}
 
 		if (cap != null) {
-			WebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), cap);
+			System.out.printf("Executing on %s\n", browser);
+			cap.setBrowserName(browser);
+			
+			driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), cap);
 			driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-
+			
 			// Launch website
+			final String Url = "https://docs.google.com/forms/d/18nq9YuC0E8p2JOONkqZ5IAMIdP1eytiEDV8hJn_spHk/viewform";
 			driver.navigate().to(Url);
 			driver.manage().window().maximize();
 		}
@@ -75,36 +80,28 @@ public class SeleniumTest {
 	}
 
 	@Test
-	public void test() {
-	      // Click on Math Calculators
-	      driver.findElement(By.xpath(".//*[@id='menu']/div[3]/a")).click();   
-	      System.out.println("CLICK | .//*[@id='menu']/div[3]/a");
-	      // Click on Percent Calculators
-	      driver.findElement(By.xpath(".//*[@id='menu']/div[4]/div[3]/a")).click();
-	      System.out.println("CLICK | .//*[@id='menu']/div[4]/div[3]/a");
-
-	      // Enter value 10 in the first number of the percent Calculator
-	      driver.findElement(By.id("cpar1")).sendKeys("10");
-	      System.out.println("SEND KEYS | cpar1, 10");
-
-	      // Enter value 50 in the second number of the percent Calculator
-	      driver.findElement(By.id("cpar2")).sendKeys("50");
-	      System.out.println("SEND KEYS | cpar2, 50");
-
-	      
-	      // Click Calculate Button driver.findElement(By.xpath(".//*[@id='content']/table/tbody/tr/td[2]/input")).click();
-	      // Get the Result Text based on its xpath
-	      String result = driver.findElement(By.xpath(".//*[@id='content']/p[2]/span/font/b")).getText();
-	      // Print a Log In message to the screen
-	      System.out.println(" The Result is " + result);
-	      
-	      if(result.equals("5"))
-	      {
-	         System.out.println(" The Result is Pass");
-	      }
-	      else
-	      {
-	         System.out.println(" The Result is Fail");
-	      }
+	public void test() throws InterruptedException {
+		// check if page has loaded correctly
+		assertEquals("What is your name?", driver.findElement(By.cssSelector("div.ss-q-title")).getText());
+		assertEquals("Where is the class located?", driver.findElement(By.xpath("//form[@id='ss-form']/ol/div[2]/div/div/label/div")).getText());
+		assertEquals("What type of class is it?", driver.findElement(By.xpath("//form[@id='ss-form']/ol/div[3]/div/div/label/div")).getText());
+	
+		// insert name
+		final String name = String.format("Aart %s", browser);
+		driver.findElement(By.id("entry_785445797")).clear();
+		driver.findElement(By.id("entry_785445797")).sendKeys(name);
+		
+		// select Staten Island and Brooklyn
+		driver.findElement(By.id("group_396363777_4")).click();
+		driver.findElement(By.id("group_396363777_2")).click();
+		
+		// select Hot Yoga
+		driver.findElement(By.id("group_277070397_3")).click();
+		
+		// submit form			
+		driver.findElement(By.id("ss-submit")).click();
+		
+		// check if form is posted
+		assertEquals("Your response has been recorded.", driver.findElement(By.cssSelector("div.ss-resp-message")).getText());
 	}
 }
