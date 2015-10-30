@@ -46,7 +46,6 @@ public class SeleniumTest {
 				break;
 			case "ie":
 				cap = DesiredCapabilities.internetExplorer();
-				cap.setVersion("11");
 				break;
 			default:
 				throw new IllegalArgumentException("The Browser Type is Undefined");
