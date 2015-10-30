@@ -24,7 +24,8 @@ public class SeleniumTest {
 
 	@Parameters
 	public static Collection<String> browsers(){
-		return Arrays.asList(new String[]{"ie", "firefox", "chrome"});
+		return Arrays.asList(new String[]{"firefox", "chrome"});
+//		return Arrays.asList(new String[]{"ie", "firefox", "chrome"});
 	}
 	
 	@Parameter
